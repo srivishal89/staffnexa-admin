@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Staffnexa – Admin Candidates</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#f4f6f8;
+}
+
+/* LOGIN OVERLAY */
+#loginModal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding-top:60px; /* TOP CENTER */
+  z-index:9999;
+}
+
+.login-box{
+  background:#fff;
+  width:320px;
+  padding:25px;
+  border-radius:10px;
+  box-shadow:0 6px 18px rgba(0,0,0,.2);
+}
+
+.login-box h2{
+  text-align:center;
+  margin:0 0 18px;
+  color:#333;
+}
+
+.login-box input{
+  width:100%;
+  height:38px;
+  padding:0 10px;
+  margin-bottom:12px;
+  border-radius:6px;
+  border:1px solid #ccc;
+  font-size:14px;
+  box-sizing:border-box;
+}
+
+.login-actions{
+  display:flex;
+  gap:10px;
+}
+
+.login-actions button{
+  flex:1;
+  height:38px;
+  border:none;
+  border-radius:6px;
+  font-size:14px;
+  cursor:pointer;
+}
+
+.btn-login{background:#5b6cff;color:#fff}
+.btn-cancel{background:#e0e0e0}
+
+#loginMsg{
+  margin-top:10px;
+  text-align:center;
+  font-size:13px;
+  color:red;
+}
+
+/* ADMIN PANEL (UNCHANGED) */
+.container{
+  max-width:1200px;
+  margin:30px auto;
+  background:#fff;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,.1);
+  display:none;
+}
+
+.toolbar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:15px;
+}
+
+.toolbar input,.toolbar select{
+  padding:10px;
+  border-radius:6px;
+  border:1px solid #ccc;
+  font-size:14px;
+}
+
+.toolbar input{flex:2}
+.toolbar select{flex:1}
+
+.toolbar button{
+  border:none;
+  border-radius:6px;
+  padding:10px 16px;
+  color:#fff;
+  cursor:pointer;
+}
+
+.btn-export{background:#5b6cff}
+.btn-delete{background:#e53935}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+thead{
+  background:#5b6cff;
+  color:#fff;
+}
+
+th,td{
+  padding:10px;
+  border-bottom:1px solid #ddd;
+  font-size:14px;
+}
+
+th:first-child,td:first-child{
+  text-align:center;
+  width:40px;
+}
+
+a{
+  color:#5b6cff;
+  font-weight:bold;
+  text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN POPUP -->
+<div id="loginModal">
+  <div class="login-box">
+    <h2>Admin Login</h2>
+    <input id="user" placeholder="Username">
+    <input id="pass" type="password" placeholder="Password">
+
+    <div class="login-actions">
+      <button class="btn-login" onclick="login()">Login</button>
+      <button class="btn-cancel" onclick="location.reload()">Cancel</button>
+    </div>
+
+    <div id="loginMsg"></div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL (UNCHANGED FUNCTIONALITY) -->
+<div class="container" id="adminPanel">
+  <h2>Staffnexa – Candidate Applications</h2>
+
+  <div class="toolbar">
+    <input id="search" placeholder="Search name or phone">
+    <select id="roleFilter"><option value="">Filter by role</option></select>
+    <select id="locationFilter"><option value="">Filter by location</option></select>
+    <button class="btn-export" onclick="exportSelected()">Export Selected</button>
+    <button class="btn-delete" onclick="deleteSelected()">Delete Selected</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th><input type="checkbox" id="selectAll"></th>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Role</th>
+        <th>Location</th>
+        <th>Date</th>
+        <th>Resume</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+</div>
+
+<script>
+const API='https://staffnexa-backend.onrender.com';
+let auth='',all=[];
+
+function login(){
+  loginMsg.innerText='';
+  auth='Basic '+btoa(user.value+':'+pass.value);
+
+  fetch(API+'/candidates',{headers:{Authorization:auth}})
+    .then(r=>{
+      if(!r.ok) throw 0;
+      return r.json();
+    })
+    .then(d=>{
+      all=d;
+      loginModal.style.display='none';
+      adminPanel.style.display='block';
+      fillFilters();
+      render(d);
+    })
+    .catch(()=>{
+      loginMsg.innerText='Invalid username or password';
+    });
+}
+
+function fillFilters(){
+  roleFilter.innerHTML='<option value="">Filter by role</option>'+
+    [...new Set(all.map(c=>c.role))].map(r=>`<option>${r}</option>`).join('');
+  locationFilter.innerHTML='<option value="">Filter by location</option>'+
+    [...new Set(all.map(c=>c.location))].map(l=>`<option>${l}</option>`).join('');
+}
+
+function render(data){
+  rows.innerHTML=data.map(c=>`
+    <tr>
+      <td><input type="checkbox" class="chk" data-id="${c._id}"></td>
+      <td>${c.name}</td>
+      <td>${c.phone}</td>
+      <td>${c.role}</td>
+      <td>${c.location||'-'}</td>
+      <td>${new Date(c.createdAt).toLocaleString()}</td>
+      <td>${c.resume?`<a href="${API}/${c.resume.path}" target="_blank">Download</a>`:'-'}</td>
+    </tr>
+  `).join('');
+}
+
+search.oninput=filter;
+roleFilter.onchange=filter;
+locationFilter.onchange=filter;
+
+function filter(){
+  const s=search.value.toLowerCase();
+  render(all.filter(c=>
+    (!s||c.name.toLowerCase().includes(s)||c.phone.includes(s)) &&
+    (!roleFilter.value||c.role===roleFilter.value) &&
+    (!locationFilter.value||c.location===locationFilter.value)
+  ));
+}
+
+selectAll.onchange=()=>document
+  .querySelectorAll('.chk')
+  .forEach(c=>c.checked=selectAll.checked);
+
+function exportSelected(){
+  const sel=[...document.querySelectorAll('.chk')].filter(c=>c.checked);
+  if(!sel.length) return alert('No rows selected');
+
+  const csv=[
+    ['Name','Phone','Role','Location','Date'],
+    ...sel.map(c=>{
+      const d=all.find(x=>x._id===c.dataset.id);
+      return [d.name,d.phone,d.role,d.location,new Date(d.createdAt).toLocaleString()];
+    })
+  ].map(r=>r.join(',')).join('\n');
+
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='staffnexa-candidates.csv';
+  a.click();
+}
+
+function deleteSelected(){
+  const sel=[...document.querySelectorAll('.chk')].filter(c=>c.checked);
+  if(!sel.length) return alert('No rows selected');
+  if(!confirm(`Delete ${sel.length} candidates?`)) return;
+
+  Promise.all(sel.map(c=>
+    fetch(API+'/candidates/'+c.dataset.id,{
+      method:'DELETE',
+      headers:{Authorization:auth}
+    })
+  )).then(()=>login());
+}
+</script>
+
+</body>
+</html>
