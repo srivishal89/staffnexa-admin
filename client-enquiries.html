@@ -2,16 +2,52 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Admin - Client Enquiries</title>
+  <title>Client Enquiries - Admin</title>
   <style>
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
-      margin: 30px;
       background: #f4f6f9;
     }
 
-    h2 {
+    .header {
+      background: #0a4dbf;
+      color: white;
+      padding: 15px 25px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 25px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 15px;
       margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    input, select {
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    button {
+      padding: 8px 12px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #0a4dbf;
+      color: white;
+    }
+
+    .btn-danger {
+      background: #c0392b;
+      color: white;
     }
 
     table {
@@ -23,115 +59,158 @@
     th, td {
       border: 1px solid #ddd;
       padding: 10px;
-      font-size: 14px;
-      text-align: left;
+      font-size: 13px;
+    }
+
+    th {
+      background: #e9ecef;
     }
 
     th {
       background: #0a4dbf;
       color: white;
     }
-
-    select {
-      padding: 4px;
-    }
-
-    button {
-      padding: 6px 10px;
-      border: none;
-      background: #c0392b;
-      color: white;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #a93226;
-    }
   </style>
 </head>
 <body>
 
-  <h2>Client Enquiries</h2>
+  <div class="header">
+    Staffnexa Admin — Client Enquiries
+  </div>
 
-  <table id="enquiryTable">
-    <thead>
-      <tr>
-        <th>Company</th>
-        <th>Contact</th>
-        <th>Phone</th>
-        <th>Role</th>
-        <th>Staff</th>
-        <th>Location</th>
-        <th>Timeline</th>
-        <th>Quotation</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
+  <div class="container">
 
-  <script>
-    const API_URL = "https://staffnexa-backend.onrender.com/client-enquiries";
+    <div class="filters">
+      <input type="text" id="searchInput" placeholder="Search Company" />
+      <select id="roleFilter">
+        <option value="">All Roles</option>
+        <option>Housekeeping</option>
+        <option>Pantry</option>
+        <option>Supervisor</option>
+        <option>Telecaller</option>
+      </select>
+      <select id="timelineFilter">
+        <option value="">All Timelines</option>
+        <option>Immediate</option>
+        <option>Within 7 days</option>
+        <option>Within 15 days</option>
+        <option>Within 1 month</option>
+      </select>
+      <button class="btn-primary" onclick="exportCSV()">Export CSV</button>
+    </div>
 
-    async function loadEnquiries() {
-      try {
-        const response = await fetch(API_URL, {
-          headers: {
-            "Authorization": "Basic " + btoa("admin:Staffnexa$5000")
-          }
-        });
+    <table id="enquiryTable">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Contact</th>
+          <th>Phone</th>
+          <th>Role</th>
+          <th>Staff</th>
+          <th>Location</th>
+          <th>Timeline</th>
+          <th>Quotation</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
-        const result = await response.json();
+  </div>
 
-        const tableBody = document.querySelector("#enquiryTable tbody");
-        tableBody.innerHTML = "";
+<script>
+const API_URL = "https://staffnexa-backend.onrender.com/client-enquiries";
+let allData = [];
 
-        result.data.forEach(enquiry => {
-          const row = document.createElement("tr");
-
-          row.innerHTML = `
-            <td>${enquiry.companyName}</td>
-            <td>${enquiry.contactPerson}</td>
-            <td>${enquiry.phone}</td>
-            <td>${enquiry.requirementType}</td>
-            <td>${enquiry.numberOfStaff}</td>
-            <td>${enquiry.location}</td>
-            <td>${enquiry.timeline}</td>
-            <td>
-              <select>
-                <option>No</option>
-                <option>Yes</option>
-              </select>
-            </td>
-            <td>
-              <button onclick="deleteEnquiry('${enquiry._id}')">Delete</button>
-            </td>
-          `;
-
-          tableBody.appendChild(row);
-        });
-
-      } catch (error) {
-        console.error("Error loading enquiries:", error);
-      }
+async function loadEnquiries() {
+  const response = await fetch(API_URL, {
+    headers: {
+      "Authorization": "Basic " + btoa("admin:admin123")
     }
+  });
 
-    async function deleteEnquiry(id) {
-      if (!confirm("Are you sure?")) return;
+  const result = await response.json();
+  allData = result.data;
+  renderTable(allData);
+}
 
-      await fetch(API_URL + "/" + id, {
-        method: "DELETE",
-        headers: {
-          "Authorization": "Basic " + btoa("admin:admin123")
-        }
-      });
+function renderTable(data) {
+  const tbody = document.querySelector("#enquiryTable tbody");
+  tbody.innerHTML = "";
 
-      loadEnquiries();
+  data.forEach(enquiry => {
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${enquiry.companyName}</td>
+      <td>${enquiry.contactPerson}</td>
+      <td>${enquiry.phone}</td>
+      <td>${enquiry.requirementType}</td>
+      <td>${enquiry.numberOfStaff}</td>
+      <td>${enquiry.location}</td>
+      <td>${enquiry.timeline}</td>
+      <td>
+        <select>
+          <option>No</option>
+          <option>Yes</option>
+        </select>
+      </td>
+      <td>
+        <button class="btn-danger" onclick="deleteEnquiry('${enquiry._id}')">Delete</button>
+      </td>
+    `;
+
+    tbody.appendChild(row);
+  });
+}
+
+function deleteEnquiry(id) {
+  if (!confirm("Delete this enquiry?")) return;
+
+  fetch(API_URL + "/" + id, {
+    method: "DELETE",
+    headers: {
+      "Authorization": "Basic " + btoa("admin:admin123")
     }
+  }).then(() => loadEnquiries());
+}
 
-    loadEnquiries();
-  </script>
+function exportCSV() {
+  let csv = "Company,Contact,Phone,Role,Staff,Location,Timeline\n";
+  allData.forEach(e => {
+    csv += `${e.companyName},${e.contactPerson},${e.phone},${e.requirementType},${e.numberOfStaff},${e.location},${e.timeline}\n`;
+  });
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "client-enquiries.csv";
+  a.click();
+}
+
+document.getElementById("searchInput").addEventListener("input", e => {
+  const value = e.target.value.toLowerCase();
+  const filtered = allData.filter(x =>
+    x.companyName.toLowerCase().includes(value)
+  );
+  renderTable(filtered);
+});
+
+document.getElementById("roleFilter").addEventListener("change", e => {
+  const value = e.target.value;
+  if (!value) return renderTable(allData);
+  renderTable(allData.filter(x => x.requirementType === value));
+});
+
+document.getElementById("timelineFilter").addEventListener("change", e => {
+  const value = e.target.value;
+  if (!value) return renderTable(allData);
+  renderTable(allData.filter(x => x.timeline === value));
+});
+
+loadEnquiries();
+</script>
 
 </body>
 </html>
