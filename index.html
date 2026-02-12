@@ -146,7 +146,7 @@ loginForm.addEventListener("submit", async (e) => {
 
         localStorage.setItem("adminAuth", btoa(username + ":" + password));
 
-        window.location.href = "dashboard.html";
+        window.location.href = "client-enquiries.html";
 
     } catch (error) {
         errorDiv.innerText = error.message;
@@ -164,3 +164,4 @@ document.getElementById("cancelBtn").addEventListener("click", () => {
 
 </body>
 </html>
+
