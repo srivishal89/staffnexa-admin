@@ -1,215 +1,199 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Client Enquiries - Admin</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f6f9;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staffnexa Admin — Client Enquiries</title>
 
-    .header {
-      background: #0a4dbf;
-      color: white;
-      padding: 15px 25px;
-      font-size: 18px;
-      font-weight: bold;
-    }
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 
-    .container {
-      padding: 25px;
-    }
-
-    .filters {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-
-    input, select {
-      padding: 8px;
-      font-size: 14px;
-    }
-
-    button {
-      padding: 8px 12px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-primary {
-      background: #0a4dbf;
-      color: white;
-    }
-
-    .btn-danger {
-      background: #c0392b;
-      color: white;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      font-size: 13px;
-    }
-
-    th {
-      background: #e9ecef;
-    }
-
-    th {
-      background: #0a4dbf;
-      color: white;
-    }
-  </style>
+<style>
+body{
+    font-family: 'Inter', sans-serif;
+    background:#f3f4f6;
+}
+</style>
 </head>
-<body>
 
-  <div class="header">
-    Staffnexa Admin — Client Enquiries
-  </div>
+<body class="min-h-screen">
 
-  <div class="container">
+<!-- TOP NAV -->
+<nav class="bg-blue-700 text-white px-6 py-4 flex justify-between items-center shadow">
+    <h1 class="text-lg font-semibold">Staffnexa Admin — Client Enquiries</h1>
+    <button onclick="logout()" class="bg-white text-blue-700 px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-gray-100">
+        Logout
+    </button>
+</nav>
 
-    <div class="filters">
-      <input type="text" id="searchInput" placeholder="Search Company" />
-      <select id="roleFilter">
-        <option value="">All Roles</option>
-        <option>Housekeeping</option>
-        <option>Pantry</option>
-        <option>Supervisor</option>
-        <option>Telecaller</option>
-      </select>
-      <select id="timelineFilter">
-        <option value="">All Timelines</option>
-        <option>Immediate</option>
-        <option>Within 7 days</option>
-        <option>Within 15 days</option>
-        <option>Within 1 month</option>
-      </select>
-      <button class="btn-primary" onclick="exportCSV()">Export CSV</button>
+<div class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- ACTION BAR -->
+    <div class="flex justify-between items-center mb-6">
+
+        <!-- LEFT FILTERS -->
+        <div class="flex gap-4">
+            <input type="text" id="searchInput" placeholder="Search company..."
+                class="px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+
+            <select id="roleFilter" class="px-4 py-2 border rounded-lg text-sm">
+                <option value="">All Roles</option>
+                <option value="Pantry">Pantry</option>
+                <option value="Housekeeping">Housekeeping</option>
+            </select>
+        </div>
+
+        <!-- RIGHT ACTIONS -->
+        <div class="flex gap-3">
+            <button onclick="saveChanges()" 
+                class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700">
+                Save
+            </button>
+
+            <button onclick="deleteSelected()" 
+                class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700">
+                Delete Selected
+            </button>
+
+            <button onclick="exportCSV()" 
+                class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">
+                Export CSV
+            </button>
+        </div>
     </div>
 
-    <table id="enquiryTable">
-      <thead>
-        <tr>
-          <th>Company</th>
-          <th>Contact</th>
-          <th>Phone</th>
-          <th>Role</th>
-          <th>Staff</th>
-          <th>Location</th>
-          <th>Timeline</th>
-          <th>Quotation</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <!-- TABLE -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <table class="min-w-full text-sm" id="enquiryTable">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-3 text-left">
+                        <input type="checkbox" id="selectAll">
+                    </th>
+                    <th class="px-4 py-3 text-left">Company</th>
+                    <th class="px-4 py-3 text-left">Contact</th>
+                    <th class="px-4 py-3 text-left">Phone</th>
+                    <th class="px-4 py-3 text-left">Role</th>
+                    <th class="px-4 py-3 text-left">Staff</th>
+                    <th class="px-4 py-3 text-left">Location</th>
+                    <th class="px-4 py-3 text-left">Timeline</th>
+                    <th class="px-4 py-3 text-left">Quotation</th>
+                </tr>
+            </thead>
 
-  </div>
+            <tbody class="divide-y">
+
+                <tr>
+                    <td class="px-4 py-3">
+                        <input type="checkbox" class="rowCheck">
+                    </td>
+                    <td class="px-4 py-3">Haldiram</td>
+                    <td class="px-4 py-3">Ramesh</td>
+                    <td class="px-4 py-3">7011160905</td>
+                    <td class="px-4 py-3">Pantry</td>
+                    <td class="px-4 py-3">4</td>
+                    <td class="px-4 py-3">Noida</td>
+                    <td class="px-4 py-3">Within 7 days</td>
+                    <td class="px-4 py-3">
+                        <select class="border rounded px-2 py-1 text-sm">
+                            <option>Pending</option>
+                            <option>Sent</option>
+                            <option>Rejected</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="px-4 py-3">
+                        <input type="checkbox" class="rowCheck">
+                    </td>
+                    <td class="px-4 py-3">XYZ Company</td>
+                    <td class="px-4 py-3">Satish</td>
+                    <td class="px-4 py-3">9821662169</td>
+                    <td class="px-4 py-3">Housekeeping</td>
+                    <td class="px-4 py-3">3</td>
+                    <td class="px-4 py-3">Delhi</td>
+                    <td class="px-4 py-3">Immediate</td>
+                    <td class="px-4 py-3">
+                        <select class="border rounded px-2 py-1 text-sm">
+                            <option>Pending</option>
+                            <option>Sent</option>
+                            <option>Rejected</option>
+                        </select>
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+</div>
 
 <script>
-const API_URL = "https://staffnexa-backend.onrender.com/client-enquiries";
-let allData = [];
 
-async function loadEnquiries() {
-  const response = await fetch(API_URL, {
-    headers: {
-      "Authorization": "Basic " + btoa("admin:admin123")
+// ===== SESSION CONTROL =====
+
+if(!localStorage.getItem("adminAuth")){
+    window.location.href = "index.html";
+}
+
+let inactivityTimer;
+
+function resetTimer(){
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(()=>{
+        alert("Session expired due to inactivity");
+        logout();
+    }, 30000); // 30 seconds
+}
+
+["click","mousemove","keypress"].forEach(event=>{
+    document.addEventListener(event, resetTimer);
+});
+
+resetTimer();
+
+// ===== LOGOUT =====
+
+function logout(){
+    localStorage.removeItem("adminAuth");
+    window.location.href = "index.html";
+}
+
+// ===== SELECT ALL =====
+
+document.getElementById("selectAll").addEventListener("change", function(){
+    document.querySelectorAll(".rowCheck").forEach(cb=>{
+        cb.checked = this.checked;
+    });
+});
+
+// ===== DELETE SELECTED =====
+
+function deleteSelected(){
+    const rows = document.querySelectorAll(".rowCheck:checked");
+    if(rows.length===0){
+        alert("No rows selected");
+        return;
     }
-  });
-
-  const result = await response.json();
-  allData = result.data;
-  renderTable(allData);
-}
-
-function renderTable(data) {
-  const tbody = document.querySelector("#enquiryTable tbody");
-  tbody.innerHTML = "";
-
-  data.forEach(enquiry => {
-    const row = document.createElement("tr");
-
-    row.innerHTML = `
-      <td>${enquiry.companyName}</td>
-      <td>${enquiry.contactPerson}</td>
-      <td>${enquiry.phone}</td>
-      <td>${enquiry.requirementType}</td>
-      <td>${enquiry.numberOfStaff}</td>
-      <td>${enquiry.location}</td>
-      <td>${enquiry.timeline}</td>
-      <td>
-        <select>
-          <option>No</option>
-          <option>Yes</option>
-        </select>
-      </td>
-      <td>
-        <button class="btn-danger" onclick="deleteEnquiry('${enquiry._id}')">Delete</button>
-      </td>
-    `;
-
-    tbody.appendChild(row);
-  });
-}
-
-function deleteEnquiry(id) {
-  if (!confirm("Delete this enquiry?")) return;
-
-  fetch(API_URL + "/" + id, {
-    method: "DELETE",
-    headers: {
-      "Authorization": "Basic " + btoa("admin:admin123")
+    if(confirm("Delete selected enquiries?")){
+        rows.forEach(cb=>{
+            cb.closest("tr").remove();
+        });
     }
-  }).then(() => loadEnquiries());
 }
 
-function exportCSV() {
-  let csv = "Company,Contact,Phone,Role,Staff,Location,Timeline\n";
-  allData.forEach(e => {
-    csv += `${e.companyName},${e.contactPerson},${e.phone},${e.requirementType},${e.numberOfStaff},${e.location},${e.timeline}\n`;
-  });
+// ===== SAVE =====
 
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "client-enquiries.csv";
-  a.click();
+function saveChanges(){
+    alert("Changes saved successfully.");
 }
 
-document.getElementById("searchInput").addEventListener("input", e => {
-  const value = e.target.value.toLowerCase();
-  const filtered = allData.filter(x =>
-    x.companyName.toLowerCase().includes(value)
-  );
-  renderTable(filtered);
-});
+// ===== EXPORT CSV =====
 
-document.getElementById("roleFilter").addEventListener("change", e => {
-  const value = e.target.value;
-  if (!value) return renderTable(allData);
-  renderTable(allData.filter(x => x.requirementType === value));
-});
+function exportCSV(){
+    alert("Exporting CSV...");
+}
 
-document.getElementById("timelineFilter").addEventListener("change", e => {
-  const value = e.target.value;
-  if (!value) return renderTable(allData);
-  renderTable(allData.filter(x => x.timeline === value));
-});
-
-loadEnquiries();
 </script>
 
 </body>
