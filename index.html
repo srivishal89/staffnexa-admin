@@ -1,285 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Staffnexa – Admin Candidates</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>Staffnexa Admin Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#f4f6f8;
-}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-/* LOGIN OVERLAY */
-#loginModal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  padding-top:60px; /* TOP CENTER */
-  z-index:9999;
-}
-
-.login-box{
-  background:#fff;
-  width:320px;
-  padding:25px;
-  border-radius:10px;
-  box-shadow:0 6px 18px rgba(0,0,0,.2);
-}
-
-.login-box h2{
-  text-align:center;
-  margin:0 0 18px;
-  color:#333;
-}
-
-.login-box input{
-  width:100%;
-  height:38px;
-  padding:0 10px;
-  margin-bottom:12px;
-  border-radius:6px;
-  border:1px solid #ccc;
-  font-size:14px;
-  box-sizing:border-box;
-}
-
-.login-actions{
-  display:flex;
-  gap:10px;
-}
-
-.login-actions button{
-  flex:1;
-  height:38px;
-  border:none;
-  border-radius:6px;
-  font-size:14px;
-  cursor:pointer;
-}
-
-.btn-login{background:#5b6cff;color:#fff}
-.btn-cancel{background:#e0e0e0}
-
-#loginMsg{
-  margin-top:10px;
-  text-align:center;
-  font-size:13px;
-  color:red;
-}
-
-/* ADMIN PANEL (UNCHANGED) */
-.container{
-  max-width:1200px;
-  margin:30px auto;
-  background:#fff;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,.1);
-  display:none;
-}
-
-.toolbar{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-bottom:15px;
-}
-
-.toolbar input,.toolbar select{
-  padding:10px;
-  border-radius:6px;
-  border:1px solid #ccc;
-  font-size:14px;
-}
-
-.toolbar input{flex:2}
-.toolbar select{flex:1}
-
-.toolbar button{
-  border:none;
-  border-radius:6px;
-  padding:10px 16px;
-  color:#fff;
-  cursor:pointer;
-}
-
-.btn-export{background:#5b6cff}
-.btn-delete{background:#e53935}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-
-thead{
-  background:#5b6cff;
-  color:#fff;
-}
-
-th,td{
-  padding:10px;
-  border-bottom:1px solid #ddd;
-  font-size:14px;
-}
-
-th:first-child,td:first-child{
-  text-align:center;
-  width:40px;
-}
-
-a{
-  color:#5b6cff;
-  font-weight:bold;
-  text-decoration:none;
-}
-</style>
+    <style>
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob { animation: blob 7s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+        }
+    </style>
 </head>
 
-<body>
+<body class="bg-gray-900 min-h-screen font-sans antialiased overflow-hidden">
 
-<!-- LOGIN POPUP -->
-<div id="loginModal">
-  <div class="login-box">
-    <h2>Admin Login</h2>
-    <input id="user" placeholder="Username">
-    <input id="pass" type="password" placeholder="Password">
-
-    <div class="login-actions">
-      <button class="btn-login" onclick="login()">Login</button>
-      <button class="btn-cancel" onclick="location.reload()">Cancel</button>
+<!-- Background -->
+<div class="fixed inset-0 z-0">
+    <div class="absolute inset-0 opacity-40 bg-cover bg-center bg-no-repeat scale-105"
+        style="background-image: url('login-bg.jpg'); filter: blur(3px);">
     </div>
+    <div class="absolute inset-0 bg-gradient-to-br from-blue-900/90 via-slate-900/90 to-black/90"></div>
 
-    <div id="loginMsg"></div>
-  </div>
+    <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
 </div>
 
-<!-- ADMIN PANEL (UNCHANGED FUNCTIONALITY) -->
-<div class="container" id="adminPanel">
-  <h2>Staffnexa – Candidate Applications</h2>
+<!-- Login Card -->
+<div class="relative z-10 min-h-screen w-full flex items-center justify-center px-6">
+    <div class="glass-card w-full max-w-md rounded-3xl shadow-2xl p-8 md:p-10 border border-white/20">
 
-  <div class="toolbar">
-    <input id="search" placeholder="Search name or phone">
-    <select id="roleFilter"><option value="">Filter by role</option></select>
-    <select id="locationFilter"><option value="">Filter by location</option></select>
-    <button class="btn-export" onclick="exportSelected()">Export Selected</button>
-    <button class="btn-delete" onclick="deleteSelected()">Delete Selected</button>
-  </div>
+        <!-- Logo -->
+        <div class="flex flex-col items-center mb-8">
+            <img src="logo.png" class="w-20 mb-3" />
+        </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th><input type="checkbox" id="selectAll"></th>
-        <th>Name</th>
-        <th>Phone</th>
-        <th>Role</th>
-        <th>Location</th>
-        <th>Date</th>
-        <th>Resume</th>
-      </tr>
-    </thead>
-    <tbody id="rows"></tbody>
-  </table>
+        <div class="mb-8 text-center">
+            <h2 class="text-2xl font-bold text-gray-800">Admin Portal Login</h2>
+            <p class="text-gray-500 text-sm mt-1">Enter your admin credentials to continue</p>
+        </div>
+
+        <form id="loginForm" class="space-y-5">
+
+            <!-- Username -->
+            <div class="relative group">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+                    <i data-lucide="user" class="h-5 w-5"></i>
+                </div>
+                <input type="text" id="username" required
+                    class="block w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-600 focus:outline-none"
+                    placeholder="Admin Username">
+            </div>
+
+            <!-- Password -->
+            <div class="relative group">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+                    <i data-lucide="lock" class="h-5 w-5"></i>
+                </div>
+                <input type="password" id="password" required
+                    class="block w-full pl-12 pr-12 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-600 focus:outline-none"
+                    placeholder="Admin Password">
+
+                <button type="button" id="togglePassword"
+                    class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400">
+                    <i data-lucide="eye" id="eyeIcon" class="h-5 w-5"></i>
+                </button>
+            </div>
+
+            <!-- Error -->
+            <p id="errorMessage" class="text-red-500 text-sm text-center"></p>
+
+            <!-- Buttons -->
+            <div class="pt-4 flex gap-3">
+                <button type="submit" id="loginBtn"
+                    class="flex-1 bg-gradient-to-r from-blue-900 to-blue-800 text-white py-3 rounded-xl font-semibold text-sm shadow-lg hover:to-blue-700 transition-all">
+                    Login →
+                </button>
+
+                <button type="button" id="cancelBtn"
+                    class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-semibold text-sm hover:bg-gray-200 transition-all">
+                    Cancel
+                </button>
+            </div>
+        </form>
+
+        <div class="mt-8 text-center border-t border-gray-100 pt-6">
+            <p class="text-xs text-gray-400">
+                © <span id="year"></span> StaffNexa. All rights reserved.
+            </p>
+        </div>
+
+    </div>
 </div>
 
 <script>
-const API='https://staffnexa-backend.onrender.com';
-let auth='',all=[];
+lucide.createIcons();
+document.getElementById("year").textContent = new Date().getFullYear();
 
-function login(){
-  loginMsg.innerText='';
-  auth='Basic '+btoa(user.value+':'+pass.value);
+const API_BASE = "https://staffnexa-backend.onrender.com";
 
-  fetch(API+'/candidates',{headers:{Authorization:auth}})
-    .then(r=>{
-      if(!r.ok) throw 0;
-      return r.json();
-    })
-    .then(d=>{
-      all=d;
-      loginModal.style.display='none';
-      adminPanel.style.display='block';
-      fillFilters();
-      render(d);
-    })
-    .catch(()=>{
-      loginMsg.innerText='Invalid username or password';
-    });
-}
+document.getElementById("loginForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
 
-function fillFilters(){
-  roleFilter.innerHTML='<option value="">Filter by role</option>'+
-    [...new Set(all.map(c=>c.role))].map(r=>`<option>${r}</option>`).join('');
-  locationFilter.innerHTML='<option value="">Filter by location</option>'+
-    [...new Set(all.map(c=>c.location))].map(l=>`<option>${l}</option>`).join('');
-}
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const errorDiv = document.getElementById("errorMessage");
+    const loginBtn = document.getElementById("loginBtn");
 
-function render(data){
-  rows.innerHTML=data.map(c=>`
-    <tr>
-      <td><input type="checkbox" class="chk" data-id="${c._id}"></td>
-      <td>${c.name}</td>
-      <td>${c.phone}</td>
-      <td>${c.role}</td>
-      <td>${c.location||'-'}</td>
-      <td>${new Date(c.createdAt).toLocaleString()}</td>
-      <td>${c.resume?`<a href="${API}/${c.resume.path}" target="_blank">Download</a>`:'-'}</td>
-    </tr>
-  `).join('');
-}
+    if (!username || !password) {
+        errorDiv.innerText = "Please enter username and password";
+        return;
+    }
 
-search.oninput=filter;
-roleFilter.onchange=filter;
-locationFilter.onchange=filter;
+    loginBtn.innerText = "Signing in...";
+    loginBtn.disabled = true;
 
-function filter(){
-  const s=search.value.toLowerCase();
-  render(all.filter(c=>
-    (!s||c.name.toLowerCase().includes(s)||c.phone.includes(s)) &&
-    (!roleFilter.value||c.role===roleFilter.value) &&
-    (!locationFilter.value||c.location===locationFilter.value)
-  ));
-}
+    try {
+        const response = await fetch(`${API_BASE}/admin-candidates`, {
+            method: "GET",
+            headers: {
+                "Authorization": "Basic " + btoa(username + ":" + password)
+            }
+        });
 
-selectAll.onchange=()=>document
-  .querySelectorAll('.chk')
-  .forEach(c=>c.checked=selectAll.checked);
+        if (!response.ok) {
+            errorDiv.innerText = "Invalid admin credentials";
+            loginBtn.innerText = "Login →";
+            loginBtn.disabled = false;
+            return;
+        }
 
-function exportSelected(){
-  const sel=[...document.querySelectorAll('.chk')].filter(c=>c.checked);
-  if(!sel.length) return alert('No rows selected');
+        localStorage.setItem("adminAuth", btoa(username + ":" + password));
+        window.location.href = "dashboard.html";
 
-  const csv=[
-    ['Name','Phone','Role','Location','Date'],
-    ...sel.map(c=>{
-      const d=all.find(x=>x._id===c.dataset.id);
-      return [d.name,d.phone,d.role,d.location,new Date(d.createdAt).toLocaleString()];
-    })
-  ].map(r=>r.join(',')).join('\n');
+    } catch (error) {
+        errorDiv.innerText = "Connection error";
+        loginBtn.innerText = "Login →";
+        loginBtn.disabled = false;
+    }
+});
 
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download='staffnexa-candidates.csv';
-  a.click();
-}
+document.getElementById("cancelBtn").addEventListener("click", function() {
+    document.getElementById("loginForm").reset();
+});
 
-function deleteSelected(){
-  const sel=[...document.querySelectorAll('.chk')].filter(c=>c.checked);
-  if(!sel.length) return alert('No rows selected');
-  if(!confirm(`Delete ${sel.length} candidates?`)) return;
+document.getElementById("togglePassword").addEventListener("click", function() {
+    const passwordInput = document.getElementById("password");
+    const eyeIcon = document.getElementById("eyeIcon");
 
-  Promise.all(sel.map(c=>
-    fetch(API+'/candidates/'+c.dataset.id,{
-      method:'DELETE',
-      headers:{Authorization:auth}
-    })
-  )).then(()=>login());
-}
+    const isPassword = passwordInput.type === "password";
+    passwordInput.type = isPassword ? "text" : "password";
+    eyeIcon.setAttribute("data-lucide", isPassword ? "eye-off" : "eye");
+    lucide.createIcons();
+});
 </script>
 
 </body>
