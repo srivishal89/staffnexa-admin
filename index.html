@@ -5,6 +5,7 @@
     <title>Staffnexa Admin Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -15,8 +16,12 @@
             66% { transform: translate(-20px, 20px) scale(0.9); }
             100% { transform: translate(0px, 0px) scale(1); }
         }
-        .animate-blob { animation: blob 7s infinite; }
-        .animation-delay-2000 { animation-delay: 2s; }
+        .animate-blob {
+            animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
         .glass-card {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
@@ -26,143 +31,134 @@
 
 <body class="bg-gray-900 min-h-screen font-sans antialiased overflow-hidden">
 
-<!-- Background -->
-<div class="fixed inset-0 z-0">
-    <div class="absolute inset-0 opacity-40 bg-cover bg-center bg-no-repeat scale-105"
-        style="background-image: url('login-bg.jpg'); filter: blur(3px);">
+    <!-- Background -->
+    <div class="fixed inset-0 z-0">
+        <div class="absolute inset-0 opacity-40 bg-cover bg-center bg-no-repeat scale-105"
+             style="background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1950&q=80'); filter: blur(3px);">
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-900/90 via-slate-900/90 to-black/90"></div>
+
+        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
     </div>
-    <div class="absolute inset-0 bg-gradient-to-br from-blue-900/90 via-slate-900/90 to-black/90"></div>
 
-    <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-</div>
+    <!-- Login Card -->
+    <div class="relative z-10 min-h-screen w-full flex items-center justify-center px-6">
+        <div class="glass-card w-full max-w-md rounded-3xl shadow-2xl p-8 md:p-10 border border-white/20">
 
-<!-- Login Card -->
-<div class="relative z-10 min-h-screen w-full flex items-center justify-center px-6">
-    <div class="glass-card w-full max-w-md rounded-3xl shadow-2xl p-8 md:p-10 border border-white/20">
-
-        <!-- Logo -->
-        <div class="flex flex-col items-center mb-8">
-            <img src="logo.png" class="w-20 mb-3" />
-        </div>
-
-        <div class="mb-8 text-center">
-            <h2 class="text-2xl font-bold text-gray-800">Admin Portal Login</h2>
-            <p class="text-gray-500 text-sm mt-1">Enter your admin credentials to continue</p>
-        </div>
-
-        <form id="loginForm" class="space-y-5">
-
-            <!-- Username -->
-            <div class="relative group">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
-                    <i data-lucide="user" class="h-5 w-5"></i>
-                </div>
-                <input type="text" id="username" required
-                    class="block w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-600 focus:outline-none"
-                    placeholder="Admin Username">
+            <!-- Logo -->
+            <div class="flex flex-col items-center mb-8">
+                <img src="logo.png" class="w-16 mb-3" />
+                <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">
+                    STAFFNEXA
+                </h1>
+                <p class="text-xs font-semibold text-blue-600 tracking-widest uppercase">
+                    Talent Solutions
+                </p>
             </div>
 
-            <!-- Password -->
-            <div class="relative group">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
-                    <i data-lucide="lock" class="h-5 w-5"></i>
-                </div>
-                <input type="password" id="password" required
-                    class="block w-full pl-12 pr-12 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-600 focus:outline-none"
-                    placeholder="Admin Password">
-
-                <button type="button" id="togglePassword"
-                    class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400">
-                    <i data-lucide="eye" id="eyeIcon" class="h-5 w-5"></i>
-                </button>
+            <!-- Header -->
+            <div class="mb-6 text-center">
+                <h2 class="text-2xl font-bold text-gray-800">Admin Login</h2>
+                <p class="text-gray-500 text-sm mt-1">
+                    Enter your admin credentials
+                </p>
             </div>
 
             <!-- Error -->
-            <p id="errorMessage" class="text-red-500 text-sm text-center"></p>
+            <div id="errorMessage" class="text-red-600 text-sm text-center mb-4"></div>
 
-            <!-- Buttons -->
-            <div class="pt-4 flex gap-3">
-                <button type="submit" id="loginBtn"
-                    class="flex-1 bg-gradient-to-r from-blue-900 to-blue-800 text-white py-3 rounded-xl font-semibold text-sm shadow-lg hover:to-blue-700 transition-all">
-                    Login →
-                </button>
+            <!-- Form -->
+            <form id="loginForm" class="space-y-5">
 
-                <button type="button" id="cancelBtn"
-                    class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-semibold text-sm hover:bg-gray-200 transition-all">
-                    Cancel
-                </button>
+                <!-- Username -->
+                <div class="relative">
+                    <input type="text" id="username" required
+                        class="block w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:outline-none focus:border-blue-600 transition-all"
+                        placeholder="Username">
+                </div>
+
+                <!-- Password -->
+                <div class="relative">
+                    <input type="password" id="password" required
+                        class="block w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:outline-none focus:border-blue-600 transition-all"
+                        placeholder="Password">
+                </div>
+
+                <!-- Buttons -->
+                <div class="pt-4 flex gap-3">
+                    <button type="submit" id="loginBtn"
+                        class="flex-1 bg-blue-900 text-white py-3 rounded-xl font-semibold text-sm hover:bg-blue-800 transition-all">
+                        Login
+                    </button>
+
+                    <button type="button" id="cancelBtn"
+                        class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-semibold text-sm hover:bg-gray-200 transition-all">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+
+            <!-- Footer -->
+            <div class="mt-8 text-center border-t border-gray-100 pt-6">
+                <p class="text-xs text-gray-400">
+                    © <span id="year"></span> StaffNexa. All rights reserved.
+                </p>
             </div>
-        </form>
-
-        <div class="mt-8 text-center border-t border-gray-100 pt-6">
-            <p class="text-xs text-gray-400">
-                © <span id="year"></span> StaffNexa. All rights reserved.
-            </p>
         </div>
-
     </div>
-</div>
 
 <script>
 lucide.createIcons();
-document.getElementById("year").textContent = new Date().getFullYear();
+document.getElementById('year').textContent = new Date().getFullYear();
 
 const API_BASE = "https://staffnexa-backend.onrender.com";
 
-document.getElementById("loginForm").addEventListener("submit", async function(e) {
+const loginForm = document.getElementById("loginForm");
+const errorDiv = document.getElementById("errorMessage");
+const loginBtn = document.getElementById("loginBtn");
+
+loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value.trim();
-    const errorDiv = document.getElementById("errorMessage");
-    const loginBtn = document.getElementById("loginBtn");
 
-    if (!username || !password) {
-        errorDiv.innerText = "Please enter username and password";
-        return;
-    }
-
-    loginBtn.innerText = "Signing in...";
+    errorDiv.innerText = "";
     loginBtn.disabled = true;
+    loginBtn.innerText = "Signing in...";
 
     try {
-        const response = await fetch(`${API_BASE}/admin-candidates`, {
+        const response = await fetch(`${API_BASE}/candidates`, {
             method: "GET",
             headers: {
                 "Authorization": "Basic " + btoa(username + ":" + password)
             }
         });
 
+        if (response.status === 401) {
+            throw new Error("Invalid admin credentials");
+        }
+
         if (!response.ok) {
-            errorDiv.innerText = "Invalid admin credentials";
-            loginBtn.innerText = "Login →";
-            loginBtn.disabled = false;
-            return;
+            throw new Error("Server error");
         }
 
         localStorage.setItem("adminAuth", btoa(username + ":" + password));
+
         window.location.href = "dashboard.html";
 
     } catch (error) {
-        errorDiv.innerText = "Connection error";
-        loginBtn.innerText = "Login →";
-        loginBtn.disabled = false;
+        errorDiv.innerText = error.message;
     }
+
+    loginBtn.disabled = false;
+    loginBtn.innerText = "Login";
 });
 
-document.getElementById("cancelBtn").addEventListener("click", function() {
-    document.getElementById("loginForm").reset();
-});
-
-document.getElementById("togglePassword").addEventListener("click", function() {
-    const passwordInput = document.getElementById("password");
-    const eyeIcon = document.getElementById("eyeIcon");
-
-    const isPassword = passwordInput.type === "password";
-    passwordInput.type = isPassword ? "text" : "password";
-    eyeIcon.setAttribute("data-lucide", isPassword ? "eye-off" : "eye");
-    lucide.createIcons();
+document.getElementById("cancelBtn").addEventListener("click", () => {
+    loginForm.reset();
+    errorDiv.innerText = "";
 });
 </script>
 
