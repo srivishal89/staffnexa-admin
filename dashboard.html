@@ -1,3 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Staffnexa Dashboard</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+<div class="p-6">
+
+    <h1 class="text-2xl font-bold mb-4">Candidate Applications</h1>
+
+    <div class="bg-white p-4 rounded shadow">
+
+        <table class="w-full border">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="p-3">Name</th>
+                    <th class="p-3">Phone</th>
+                    <th class="p-3">Role</th>
+                    <th class="p-3">Location</th>
+                    <th class="p-3">Date</th>
+                    <th class="p-3">Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="tableBody">
+                <tr>
+                    <td colspan="6" class="p-4 text-center">Loading...</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+
 <script>
 const API_BASE = "https://staffnexa-backend.onrender.com";
 
@@ -15,7 +55,7 @@ function getToken() {
     return token;
 }
 
-// ===== FETCH DATA =====
+// ===== FETCH =====
 async function fetchCandidates() {
     const token = getToken();
     if (!token) return;
@@ -33,37 +73,29 @@ async function fetchCandidates() {
 
         const json = await res.json();
 
-        console.log("API RESPONSE:", json); // 🔍 DEBUG
+        console.log("API DATA:", json);
 
-        // ===== HANDLE BOTH CASES =====
-        let dataArray;
+        let dataArray = Array.isArray(json) ? json : json.data;
 
-        if (Array.isArray(json)) {
-            dataArray = json;
-        } else if (json.data) {
-            dataArray = json.data;
-        } else {
-            throw new Error("Invalid data format");
-        }
+        if (!dataArray) throw new Error("Invalid data");
 
-        // ===== MAP DATA =====
         candidates = dataArray.map(c => ({
             id: c._id,
-            name: c.name || c.fullName || "N/A",
-            phone: c.phone || c.mobile || "",
-            role: c.jobRole || c.role || "N/A",
-            location: c.location || c.city || "N/A",
+            name: c.name || "N/A",
+            phone: c.phone || "",
+            role: c.jobRole || "",
+            location: c.location || "",
             date: c.createdAt ? new Date(c.createdAt).toLocaleString() : "-"
         }));
 
         renderTable();
 
     } catch (err) {
-        console.error("FETCH ERROR:", err);
+        console.error(err);
 
         document.getElementById("tableBody").innerHTML = `
             <tr>
-                <td colspan="7" class="p-6 text-center text-red-500">
+                <td colspan="6" class="p-4 text-center text-red-500">
                     Failed to load data
                 </td>
             </tr>
@@ -71,17 +103,22 @@ async function fetchCandidates() {
     }
 }
 
-// ===== RENDER TABLE =====
+// ===== RENDER =====
 function renderTable() {
     const tableBody = document.getElementById("tableBody");
+
+    if (!tableBody) {
+        console.error("tableBody not found");
+        return;
+    }
 
     tableBody.innerHTML = "";
 
     if (!candidates.length) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="7" class="p-6 text-center">
-                    No candidates found
+                <td colspan="6" class="p-4 text-center">
+                    No data found
                 </td>
             </tr>
         `;
@@ -90,20 +127,20 @@ function renderTable() {
 
     candidates.forEach(c => {
         tableBody.innerHTML += `
-            <tr>
-                <td class="p-5">${c.name}</td>
-                <td class="p-5">${c.phone}</td>
-                <td class="p-5">${c.role}</td>
-                <td class="p-5">${c.location}</td>
-                <td class="p-5">${c.date}</td>
-                <td class="p-5 text-right">
-                    <button onclick="deleteCandidate('${c.id}')" class="text-red-600">Delete</button>
+            <tr class="border-b">
+                <td class="p-3">${c.name}</td>
+                <td class="p-3">${c.phone}</td>
+                <td class="p-3">${c.role}</td>
+                <td class="p-3">${c.location}</td>
+                <td class="p-3">${c.date}</td>
+                <td class="p-3">
+                    <button onclick="deleteCandidate('${c.id}')" class="text-red-600">
+                        Delete
+                    </button>
                 </td>
             </tr>
         `;
     });
-
-    document.getElementById("total-count").innerText = candidates.length;
 }
 
 // ===== DELETE =====
@@ -112,21 +149,19 @@ async function deleteCandidate(id) {
 
     const token = getToken();
 
-    try {
-        await fetch(`${API_BASE}/candidates/${id}`, {
-            method: "DELETE",
-            headers: {
-                "Authorization": "Basic " + token
-            }
-        });
+    await fetch(`${API_BASE}/candidates/${id}`, {
+        method: "DELETE",
+        headers: {
+            "Authorization": "Basic " + token
+        }
+    });
 
-        fetchCandidates();
-
-    } catch (err) {
-        alert("Delete failed");
-    }
+    fetchCandidates();
 }
 
 // ===== INIT =====
-fetchCandidates();
+window.onload = fetchCandidates;
 </script>
+
+</body>
+</html>
