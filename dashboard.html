@@ -4,163 +4,185 @@
     <meta charset="UTF-8">
     <title>Staffnexa Dashboard</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .table-container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background-color: #f0f2f5;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            font-size: 14px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            font-size: 14px;
+            color: #333;
+            border-top: 1px solid #eee;
+        }
+
+        tr:hover {
+            background-color: #fafafa;
+        }
+
+        .delete-btn {
+            color: #e74c3c;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .delete-btn:hover {
+            text-decoration: underline;
+        }
+
+        .search-box {
+            margin-bottom: 15px;
+            padding: 8px;
+            width: 250px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        @media (max-width: 768px) {
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+
+            thead {
+                display: none;
+            }
+
+            tr {
+                margin-bottom: 10px;
+                background: #fff;
+                padding: 10px;
+                border-radius: 8px;
+            }
+
+            td {
+                display: flex;
+                justify-content: space-between;
+                padding: 8px;
+            }
+        }
+    </style>
 </head>
+<body>
 
-<body class="bg-gray-100">
+<h1>Candidate Applications</h1>
 
-<div class="p-6">
+<input type="text" id="search" class="search-box" placeholder="Search candidate...">
 
-    <h1 class="text-2xl font-bold mb-4">Candidate Applications</h1>
+<div class="table-container">
+    <table id="candidateTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Role</th>
+                <th>Location</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
 
-    <div class="bg-white p-4 rounded shadow">
-
-        <table class="w-full border">
-            <thead>
-                <tr class="bg-gray-200">
-                    <th class="p-3">Name</th>
-                    <th class="p-3">Phone</th>
-                    <th class="p-3">Role</th>
-                    <th class="p-3">Location</th>
-                    <th class="p-3">Date</th>
-                    <th class="p-3">Action</th>
-                </tr>
-            </thead>
-
-            <tbody id="tableBody">
-                <tr>
-                    <td colspan="6" class="p-4 text-center">Loading...</td>
-                </tr>
-            </tbody>
-        </table>
-
-    </div>
-
+        <tbody id="tableBody">
+        </tbody>
+    </table>
 </div>
 
 <script>
-const API_BASE = "https://staffnexa-backend.onrender.com";
 
-let candidates = [];
+const API_URL = "https://jobapp.staffnexats.com/api/applications";
 
-// ===== AUTH =====
-function getToken() {
-    const token = localStorage.getItem("adminAuth");
-
-    if (!token) {
-        window.location.href = "index.html";
-        return null;
-    }
-
-    return token;
-}
-
-// ===== FETCH =====
 async function fetchCandidates() {
-    const token = getToken();
-    if (!token) return;
-
     try {
-        const res = await fetch(`${API_BASE}/candidates`, {
-            headers: {
-                "Authorization": "Basic " + token
-            }
+        const res = await fetch(API_URL);
+        const data = await res.json();
+
+        const table = document.getElementById("tableBody");
+        table.innerHTML = "";
+
+        data.forEach(candidate => {
+
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${candidate.name || "-"}</td>
+                <td>${candidate.phone || "-"}</td>
+                <td>${candidate.role || "-"}</td>
+                <td>${candidate.location || "-"}</td>
+                <td>${new Date(candidate.createdAt).toLocaleString()}</td>
+                <td>
+                    <span class="delete-btn" onclick="deleteCandidate('${candidate._id}')">
+                        Delete
+                    </span>
+                </td>
+            `;
+
+            table.appendChild(row);
         });
 
-        if (!res.ok) {
-            throw new Error("Unauthorized");
-        }
-
-        const json = await res.json();
-
-        console.log("API DATA:", json);
-
-        let dataArray = Array.isArray(json) ? json : json.data;
-
-        if (!dataArray) throw new Error("Invalid data");
-
-        candidates = dataArray.map(c => ({
-            id: c._id,
-            name: c.name || "N/A",
-            phone: c.phone || "",
-            role: c.jobRole || "",
-            location: c.location || "",
-            date: c.createdAt ? new Date(c.createdAt).toLocaleString() : "-"
-        }));
-
-        renderTable();
-
     } catch (err) {
-        console.error(err);
-
-        document.getElementById("tableBody").innerHTML = `
-            <tr>
-                <td colspan="6" class="p-4 text-center text-red-500">
-                    Failed to load data
-                </td>
-            </tr>
-        `;
+        console.error("Error loading data", err);
     }
 }
 
-// ===== RENDER =====
-function renderTable() {
-    const tableBody = document.getElementById("tableBody");
-
-    if (!tableBody) {
-        console.error("tableBody not found");
-        return;
-    }
-
-    tableBody.innerHTML = "";
-
-    if (!candidates.length) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="6" class="p-4 text-center">
-                    No data found
-                </td>
-            </tr>
-        `;
-        return;
-    }
-
-    candidates.forEach(c => {
-        tableBody.innerHTML += `
-            <tr class="border-b">
-                <td class="p-3">${c.name}</td>
-                <td class="p-3">${c.phone}</td>
-                <td class="p-3">${c.role}</td>
-                <td class="p-3">${c.location}</td>
-                <td class="p-3">${c.date}</td>
-                <td class="p-3">
-                    <button onclick="deleteCandidate('${c.id}')" class="text-red-600">
-                        Delete
-                    </button>
-                </td>
-            </tr>
-        `;
-    });
-}
-
-// ===== DELETE =====
 async function deleteCandidate(id) {
     if (!confirm("Delete this candidate?")) return;
 
-    const token = getToken();
+    try {
+        await fetch(`${API_URL}/${id}`, {
+            method: "DELETE"
+        });
 
-    await fetch(`${API_BASE}/candidates/${id}`, {
-        method: "DELETE",
-        headers: {
-            "Authorization": "Basic " + token
-        }
-    });
+        fetchCandidates();
 
-    fetchCandidates();
+    } catch (err) {
+        alert("Delete failed");
+    }
 }
 
-// ===== INIT =====
-window.onload = fetchCandidates;
+document.getElementById("search").addEventListener("keyup", function() {
+    let value = this.value.toLowerCase();
+    let rows = document.querySelectorAll("#candidateTable tbody tr");
+
+    rows.forEach(row => {
+        let text = row.innerText.toLowerCase();
+        row.style.display = text.includes(value) ? "" : "none";
+    });
+});
+
+fetchCandidates();
+
 </script>
 
 </body>
