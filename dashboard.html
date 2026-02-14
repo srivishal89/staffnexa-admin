@@ -1,20 +1,21 @@
-<!-- KEEP YOUR FULL UI SAME ABOVE -->
-
 <script>
 const API_BASE = "https://staffnexa-backend.onrender.com";
 
 let candidates = [];
-let selectedIds = new Set();
 
+// ===== AUTH =====
 function getToken() {
     const token = localStorage.getItem("adminAuth");
+
     if (!token) {
         window.location.href = "index.html";
         return null;
     }
+
     return token;
 }
 
+// ===== FETCH DATA =====
 async function fetchCandidates() {
     const token = getToken();
     if (!token) return;
@@ -27,32 +28,65 @@ async function fetchCandidates() {
         });
 
         if (!res.ok) {
-            localStorage.removeItem("adminAuth");
-            window.location.href = "index.html";
-            return;
+            throw new Error("Unauthorized");
         }
 
-        const data = await res.json();
+        const json = await res.json();
 
-        candidates = data.map(c => ({
+        console.log("API RESPONSE:", json); // 🔍 DEBUG
+
+        // ===== HANDLE BOTH CASES =====
+        let dataArray;
+
+        if (Array.isArray(json)) {
+            dataArray = json;
+        } else if (json.data) {
+            dataArray = json.data;
+        } else {
+            throw new Error("Invalid data format");
+        }
+
+        // ===== MAP DATA =====
+        candidates = dataArray.map(c => ({
             id: c._id,
-            name: c.name || "",
-            phone: c.phone || "",
-            role: c.jobRole || "",
-            location: c.location || "",
-            date: new Date(c.createdAt).toLocaleString()
+            name: c.name || c.fullName || "N/A",
+            phone: c.phone || c.mobile || "",
+            role: c.jobRole || c.role || "N/A",
+            location: c.location || c.city || "N/A",
+            date: c.createdAt ? new Date(c.createdAt).toLocaleString() : "-"
         }));
 
         renderTable();
 
     } catch (err) {
-        alert("Error loading data");
+        console.error("FETCH ERROR:", err);
+
+        document.getElementById("tableBody").innerHTML = `
+            <tr>
+                <td colspan="7" class="p-6 text-center text-red-500">
+                    Failed to load data
+                </td>
+            </tr>
+        `;
     }
 }
 
+// ===== RENDER TABLE =====
 function renderTable() {
     const tableBody = document.getElementById("tableBody");
+
     tableBody.innerHTML = "";
+
+    if (!candidates.length) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="p-6 text-center">
+                    No candidates found
+                </td>
+            </tr>
+        `;
+        return;
+    }
 
     candidates.forEach(c => {
         tableBody.innerHTML += `
@@ -62,6 +96,9 @@ function renderTable() {
                 <td class="p-5">${c.role}</td>
                 <td class="p-5">${c.location}</td>
                 <td class="p-5">${c.date}</td>
+                <td class="p-5 text-right">
+                    <button onclick="deleteCandidate('${c.id}')" class="text-red-600">Delete</button>
+                </td>
             </tr>
         `;
     });
@@ -69,5 +106,27 @@ function renderTable() {
     document.getElementById("total-count").innerText = candidates.length;
 }
 
+// ===== DELETE =====
+async function deleteCandidate(id) {
+    if (!confirm("Delete this candidate?")) return;
+
+    const token = getToken();
+
+    try {
+        await fetch(`${API_BASE}/candidates/${id}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": "Basic " + token
+            }
+        });
+
+        fetchCandidates();
+
+    } catch (err) {
+        alert("Delete failed");
+    }
+}
+
+// ===== INIT =====
 fetchCandidates();
 </script>
