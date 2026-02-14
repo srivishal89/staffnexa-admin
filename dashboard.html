@@ -62,48 +62,18 @@
         }
 
         .delete-btn {
-            color: #e74c3c;
+            color: red;
             cursor: pointer;
-            font-weight: 500;
         }
 
-        .delete-btn:hover {
-            text-decoration: underline;
-        }
-
-        .loading {
+        .center {
             text-align: center;
             padding: 20px;
-            color: #888;
         }
 
         .error {
             color: red;
-            padding: 20px;
-            text-align: center;
-        }
-
-        @media (max-width: 768px) {
-            table, thead, tbody, th, td, tr {
-                display: block;
-            }
-
-            thead {
-                display: none;
-            }
-
-            tr {
-                margin-bottom: 10px;
-                background: #fff;
-                padding: 10px;
-                border-radius: 8px;
-            }
-
-            td {
-                display: flex;
-                justify-content: space-between;
-                padding: 8px;
-            }
+            font-weight: bold;
         }
     </style>
 </head>
@@ -128,7 +98,7 @@
 
         <tbody id="tableBody">
             <tr>
-                <td colspan="6" class="loading">Loading data...</td>
+                <td colspan="6" class="center">Loading...</td>
             </tr>
         </tbody>
     </table>
@@ -136,47 +106,47 @@
 
 <script>
 
-const API_URL = "https://jobapp.staffnexats.com/api/applications";
+// 🔥 FIXED API URL
+const API_URL = "https://jobapp.staffnexats.com/api/candidates";
 
 async function fetchCandidates() {
+
     const table = document.getElementById("tableBody");
 
     try {
-        const res = await fetch(API_URL);
+        const response = await fetch(API_URL);
 
-        if (!res.ok) {
-            throw new Error("API not responding");
+        if (!response.ok) {
+            throw new Error("API not working: " + response.status);
         }
 
-        const result = await res.json();
-        console.log("API RESPONSE:", result);
+        const data = await response.json();
 
-        // handle both array and object
-        const data = Array.isArray(result) ? result : (result.applications || []);
+        console.log("DATA:", data);
 
         table.innerHTML = "";
 
         if (!data.length) {
             table.innerHTML = `
                 <tr>
-                    <td colspan="6" class="loading">No data found</td>
+                    <td colspan="6" class="center">No data found</td>
                 </tr>
             `;
             return;
         }
 
-        data.forEach(candidate => {
+        data.forEach(item => {
 
             const row = document.createElement("tr");
 
             row.innerHTML = `
-                <td>${candidate.name || "-"}</td>
-                <td>${candidate.phone || "-"}</td>
-                <td>${candidate.role || "-"}</td>
-                <td>${candidate.location || "-"}</td>
-                <td>${candidate.createdAt ? new Date(candidate.createdAt).toLocaleString() : "-"}</td>
+                <td>${item.name || "-"}</td>
+                <td>${item.phone || "-"}</td>
+                <td>${item.role || "-"}</td>
+                <td>${item.location || "-"}</td>
+                <td>${item.createdAt ? new Date(item.createdAt).toLocaleString() : "-"}</td>
                 <td>
-                    <span class="delete-btn" onclick="deleteCandidate('${candidate._id}')">
+                    <span class="delete-btn" onclick="deleteCandidate('${item._id}')">
                         Delete
                     </span>
                 </td>
@@ -185,13 +155,14 @@ async function fetchCandidates() {
             table.appendChild(row);
         });
 
-    } catch (err) {
-        console.error(err);
+    } catch (error) {
+
+        console.error(error);
 
         table.innerHTML = `
             <tr>
-                <td colspan="6" class="error">
-                    Failed to load data. Check console (F12).
+                <td colspan="6" class="center error">
+                    API Error: ${error.message}
                 </td>
             </tr>
         `;
@@ -202,13 +173,9 @@ async function deleteCandidate(id) {
     if (!confirm("Delete this candidate?")) return;
 
     try {
-        const res = await fetch(`${API_URL}/${id}`, {
+        await fetch(`${API_URL}/${id}`, {
             method: "DELETE"
         });
-
-        if (!res.ok) {
-            throw new Error("Delete failed");
-        }
 
         fetchCandidates();
 
@@ -217,18 +184,16 @@ async function deleteCandidate(id) {
     }
 }
 
-// Search filter
+// Search
 document.getElementById("search").addEventListener("keyup", function() {
-    const value = this.value.toLowerCase();
-    const rows = document.querySelectorAll("#candidateTable tbody tr");
+    let value = this.value.toLowerCase();
+    let rows = document.querySelectorAll("#candidateTable tbody tr");
 
     rows.forEach(row => {
-        const text = row.innerText.toLowerCase();
-        row.style.display = text.includes(value) ? "" : "none";
+        row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none";
     });
 });
 
-// Load data
 fetchCandidates();
 
 </script>
