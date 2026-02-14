@@ -1,46 +1,73 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staffnexa Admin Dashboard</title>
+<!-- KEEP YOUR FULL UI SAME ABOVE -->
 
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+<script>
+const API_BASE = "https://staffnexa-backend.onrender.com";
 
-    <div class="container">
+let candidates = [];
+let selectedIds = new Set();
 
-        <div class="header">
-            <h2>Candidate Dashboard</h2>
-            <button onclick="logout()">Logout</button>
-        </div>
+function getToken() {
+    const token = localStorage.getItem("adminAuth");
+    if (!token) {
+        window.location.href = "index.html";
+        return null;
+    }
+    return token;
+}
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Phone</th>
-                        <th>Email</th>
-                        <th>Job Role</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
+async function fetchCandidates() {
+    const token = getToken();
+    if (!token) return;
 
-                <tbody id="candidateTableBody">
-                    <tr>
-                        <td colspan="6">Loading...</td>
-                    </tr>
-                </tbody>
+    try {
+        const res = await fetch(`${API_BASE}/candidates`, {
+            headers: {
+                "Authorization": "Basic " + token
+            }
+        });
 
-            </table>
-        </div>
+        if (!res.ok) {
+            localStorage.removeItem("adminAuth");
+            window.location.href = "index.html";
+            return;
+        }
 
-    </div>
+        const data = await res.json();
 
-    <script src="script.js"></script>
+        candidates = data.map(c => ({
+            id: c._id,
+            name: c.name || "",
+            phone: c.phone || "",
+            role: c.jobRole || "",
+            location: c.location || "",
+            date: new Date(c.createdAt).toLocaleString()
+        }));
 
-</body>
-</html>
+        renderTable();
+
+    } catch (err) {
+        alert("Error loading data");
+    }
+}
+
+function renderTable() {
+    const tableBody = document.getElementById("tableBody");
+    tableBody.innerHTML = "";
+
+    candidates.forEach(c => {
+        tableBody.innerHTML += `
+            <tr>
+                <td class="p-5">${c.name}</td>
+                <td class="p-5">${c.phone}</td>
+                <td class="p-5">${c.role}</td>
+                <td class="p-5">${c.location}</td>
+                <td class="p-5">${c.date}</td>
+            </tr>
+        `;
+    });
+
+    document.getElementById("total-count").innerText = candidates.length;
+}
+
+fetchCandidates();
+</script>
