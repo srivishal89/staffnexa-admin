@@ -106,18 +106,30 @@
 
 <script>
 
-// 🔥 FIXED API URL
-const API_URL = "https://jobapp.staffnexats.com/api/candidates";
+// ✅ CORRECT API
+const API_URL = "https://jobapp.staffnexats.com/candidates";
+
+// ⚠️ ENTER YOUR BASIC AUTH USERNAME & PASSWORD
+const USERNAME = "admin";      // change this
+const PASSWORD = "admin123";   // change this
+
+function getAuthHeader() {
+    return "Basic " + btoa(USERNAME + ":" + PASSWORD);
+}
 
 async function fetchCandidates() {
 
     const table = document.getElementById("tableBody");
 
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, {
+            headers: {
+                "Authorization": getAuthHeader()
+            }
+        });
 
         if (!response.ok) {
-            throw new Error("API not working: " + response.status);
+            throw new Error("API Error: " + response.status);
         }
 
         const data = await response.json();
@@ -162,7 +174,7 @@ async function fetchCandidates() {
         table.innerHTML = `
             <tr>
                 <td colspan="6" class="center error">
-                    API Error: ${error.message}
+                    ${error.message}
                 </td>
             </tr>
         `;
@@ -174,7 +186,10 @@ async function deleteCandidate(id) {
 
     try {
         await fetch(`${API_URL}/${id}`, {
-            method: "DELETE"
+            method: "DELETE",
+            headers: {
+                "Authorization": getAuthHeader()
+            }
         });
 
         fetchCandidates();
