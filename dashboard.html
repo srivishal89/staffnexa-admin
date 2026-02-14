@@ -121,22 +121,51 @@ const tableBody = document.getElementById("tableBody");
 
 // 🔥 FIXED RESUME HANDLER
 function getResumeUrl(resume) {
+
+    // ❌ No file
     if (!resume) return "";
 
-    // case 1: string URL
-    if (typeof resume === "string") return resume;
+    // ✅ If it's already a string
+    if (typeof resume === "string") {
 
-    // case 2: object with url
-    if (resume.url) return resume.url;
+        // full URL (already correct)
+        if (resume.startsWith("http")) {
+            return resume;
+        }
 
-    // case 3: object with path
-    if (resume.path) return API_BASE + "/" + resume.path;
+        // stored as "/uploads/file.pdf"
+        if (resume.startsWith("/uploads")) {
+            return API_BASE + resume;
+        }
 
-    // case 4: multer file
-    if (resume.filename) return API_BASE + "/uploads/" + resume.filename;
+        // stored as only filename "file.pdf"
+        return API_BASE + "/uploads/" + resume;
+    }
 
+    // ✅ If it's object
+
+    // case: { url: "https://..." }
+    if (resume.url) {
+        return resume.url;
+    }
+
+    // case: { path: "uploads/file.pdf" or "/uploads/file.pdf" }
+    if (resume.path) {
+        if (resume.path.startsWith("/")) {
+            return API_BASE + resume.path;
+        }
+        return API_BASE + "/" + resume.path;
+    }
+
+    // case: multer object { filename: "file.pdf" }
+    if (resume.filename) {
+        return API_BASE + "/uploads/" + resume.filename;
+    }
+
+    // fallback
     return "";
 }
+
 
 // FETCH
 async function fetchCandidates() {
