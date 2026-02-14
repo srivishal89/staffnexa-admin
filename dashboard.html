@@ -1,67 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Staffnexa Dashboard</title>
-
-    <style>
-        body {
-            font-family: Arial;
-            background: #f5f7fa;
-            padding: 20px;
-        }
-
-        h1 { margin-bottom: 20px; }
-
-        .search-box {
-            padding: 8px;
-            width: 250px;
-            margin-bottom: 15px;
-        }
-
-        .table-container {
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 12px;
-            border-top: 1px solid #eee;
-        }
-
-        thead {
-            background: #f0f2f5;
-        }
-
-        .delete-btn {
-            color: red;
-            cursor: pointer;
-        }
-
-        .center {
-            text-align: center;
-            padding: 20px;
-        }
-
-        .error {
-            color: red;
-        }
-    </style>
+<title>Dashboard</title>
 </head>
 <body>
 
-<h1>Candidate Applications</h1>
+<h2>Candidate Applications</h2>
 
-<input type="text" id="search" class="search-box" placeholder="Search...">
-
-<div class="table-container">
-<table id="candidateTable">
+<table border="1" width="100%">
 <thead>
 <tr>
 <th>Name</th>
@@ -69,94 +15,47 @@
 <th>Role</th>
 <th>Location</th>
 <th>Date</th>
-<th>Action</th>
 </tr>
 </thead>
 
-<tbody id="tableBody">
-<tr><td colspan="6" class="center">Loading...</td></tr>
+<tbody id="data">
+<tr><td colspan="5">Loading...</td></tr>
 </tbody>
 </table>
-</div>
 
 <script>
 
-const API_URL = "https://jobapp.staffnexats.com/candidates";
+const API = "https://jobapp.staffnexats.com/candidates";
 
-// 🔥 same as backend
-const USERNAME = "admin";
-const PASSWORD = "admin123";
-
-function authHeader() {
-    return "Basic " + btoa(USERNAME + ":" + PASSWORD);
-}
-
-async function fetchCandidates() {
-
-    const table = document.getElementById("tableBody");
-
+async function load() {
     try {
-        const res = await fetch(API_URL, {
-            method: "GET",
-            headers: {
-                "Authorization": authHeader(),
-                "Content-Type": "application/json"
-            }
-        });
-
-        if (!res.ok) {
-            throw new Error("API error: " + res.status);
-        }
-
+        const res = await fetch(API);
         const data = await res.json();
 
-        table.innerHTML = "";
+        const tbody = document.getElementById("data");
+        tbody.innerHTML = "";
 
-        data.forEach(c => {
-            const row = document.createElement("tr");
+        data.forEach(d => {
+            const tr = document.createElement("tr");
 
-            row.innerHTML = `
-                <td>${c.name || "-"}</td>
-                <td>${c.phone || "-"}</td>
-                <td>${c.role || "-"}</td>
-                <td>${c.location || "-"}</td>
-                <td>${c.createdAt ? new Date(c.createdAt).toLocaleString() : "-"}</td>
-                <td><span class="delete-btn" onclick="del('${c._id}')">Delete</span></td>
+            tr.innerHTML = `
+                <td>${d.name}</td>
+                <td>${d.phone}</td>
+                <td>${d.role}</td>
+                <td>${d.location}</td>
+                <td>${new Date(d.createdAt).toLocaleString()}</td>
             `;
 
-            table.appendChild(row);
+            tbody.appendChild(tr);
         });
 
-    } catch (err) {
-        table.innerHTML = `
-            <tr>
-                <td colspan="6" class="center error">${err.message}</td>
-            </tr>
-        `;
+    } catch(e) {
+        document.getElementById("data").innerHTML = "<tr><td colspan='5'>Error</td></tr>";
+        console.log(e);
     }
 }
 
-async function del(id) {
-    if (!confirm("Delete?")) return;
-
-    await fetch(API_URL + "/" + id, {
-        method: "DELETE",
-        headers: {
-            "Authorization": authHeader()
-        }
-    });
-
-    fetchCandidates();
-}
-
-document.getElementById("search").addEventListener("keyup", function() {
-    let val = this.value.toLowerCase();
-    document.querySelectorAll("#candidateTable tbody tr").forEach(r => {
-        r.style.display = r.innerText.toLowerCase().includes(val) ? "" : "none";
-    });
-});
-
-fetchCandidates();
+load();
 
 </script>
 
