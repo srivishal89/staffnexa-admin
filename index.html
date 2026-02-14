@@ -26,6 +26,7 @@
 
 <body class="bg-gray-900 min-h-screen font-sans antialiased overflow-hidden">
 
+<!-- Background -->
 <div class="fixed inset-0 z-0">
     <div class="absolute inset-0 opacity-40 bg-cover bg-center bg-no-repeat scale-105"
         style="background-image: url('login-bg.jpg'); filter: blur(3px);">
@@ -36,9 +37,11 @@
     <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-500 rounded-full blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
 </div>
 
+<!-- Login Card -->
 <div class="relative z-10 min-h-screen flex items-center justify-center px-6">
     <div class="glass-card w-full max-w-md rounded-3xl shadow-2xl p-8 md:p-10 border border-white/20">
 
+        <!-- Logo -->
         <div class="flex flex-col items-center mb-8">
             <img src="logo.png" class="w-20 mb-3" />
         </div>
@@ -50,6 +53,7 @@
 
         <form id="loginForm" class="space-y-5">
 
+            <!-- Username -->
             <div class="relative">
                 <div class="absolute left-0 pl-4 top-3 text-gray-400">
                     <i data-lucide="user"></i>
@@ -59,6 +63,7 @@
                     placeholder="Username">
             </div>
 
+            <!-- Password -->
             <div class="relative">
                 <div class="absolute left-0 pl-4 top-3 text-gray-400">
                     <i data-lucide="lock"></i>
@@ -67,19 +72,20 @@
                     class="w-full pl-12 pr-12 py-3 bg-gray-50 border rounded-xl focus:border-blue-600 outline-none"
                     placeholder="Password">
 
-                <button type="button" id="togglePassword" class="absolute right-3 top-3">
-                    👁
-                </button>
+                <button type="button" id="togglePassword" class="absolute right-3 top-3">👁</button>
             </div>
 
+            <!-- Error -->
             <p id="errorMessage" class="text-red-500 text-sm text-center"></p>
 
+            <!-- Button -->
             <button type="submit" id="loginBtn"
                 class="w-full bg-blue-900 text-white py-3 rounded-xl font-semibold">
-                Login
+                Login →
             </button>
 
         </form>
+
     </div>
 </div>
 
@@ -89,12 +95,19 @@ lucide.createIcons();
 const API_BASE = "https://staffnexa-backend.onrender.com";
 
 document.getElementById("loginForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
+    e.preventDefault(); // 🚨 IMPORTANT FIX
 
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value.trim();
     const errorDiv = document.getElementById("errorMessage");
     const btn = document.getElementById("loginBtn");
+
+    errorDiv.innerText = "";
+
+    if (!username || !password) {
+        errorDiv.innerText = "Enter username and password";
+        return;
+    }
 
     btn.innerText = "Signing in...";
     btn.disabled = true;
@@ -110,9 +123,30 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
 
         if (!res.ok) {
             errorDiv.innerText = "Invalid credentials";
-            btn.innerText = "Login";
+            btn.innerText = "Login →";
             btn.disabled = false;
             return;
         }
 
+        // SAVE TOKEN
         localStorage.setItem("adminAuth", token);
+
+        // REDIRECT
+        window.location.href = "dashboard.html";
+
+    } catch (err) {
+        errorDiv.innerText = "Server error";
+        btn.innerText = "Login →";
+        btn.disabled = false;
+    }
+});
+
+// Toggle Password
+document.getElementById("togglePassword").onclick = function() {
+    const p = document.getElementById("password");
+    p.type = p.type === "password" ? "text" : "password";
+};
+</script>
+
+</body>
+</html>
