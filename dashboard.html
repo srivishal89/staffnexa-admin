@@ -18,6 +18,14 @@
             color: #333;
         }
 
+        .search-box {
+            margin-bottom: 15px;
+            padding: 8px;
+            width: 250px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
         .table-container {
             background: #ffffff;
             padding: 20px;
@@ -63,12 +71,16 @@
             text-decoration: underline;
         }
 
-        .search-box {
-            margin-bottom: 15px;
-            padding: 8px;
-            width: 250px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+
+        .error {
+            color: red;
+            padding: 20px;
+            text-align: center;
         }
 
         @media (max-width: 768px) {
@@ -115,6 +127,9 @@
         </thead>
 
         <tbody id="tableBody">
+            <tr>
+                <td colspan="6" class="loading">Loading data...</td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -124,12 +139,31 @@
 const API_URL = "https://jobapp.staffnexats.com/api/applications";
 
 async function fetchCandidates() {
+    const table = document.getElementById("tableBody");
+
     try {
         const res = await fetch(API_URL);
-        const data = await res.json();
 
-        const table = document.getElementById("tableBody");
+        if (!res.ok) {
+            throw new Error("API not responding");
+        }
+
+        const result = await res.json();
+        console.log("API RESPONSE:", result);
+
+        // handle both array and object
+        const data = Array.isArray(result) ? result : (result.applications || []);
+
         table.innerHTML = "";
+
+        if (!data.length) {
+            table.innerHTML = `
+                <tr>
+                    <td colspan="6" class="loading">No data found</td>
+                </tr>
+            `;
+            return;
+        }
 
         data.forEach(candidate => {
 
@@ -140,7 +174,7 @@ async function fetchCandidates() {
                 <td>${candidate.phone || "-"}</td>
                 <td>${candidate.role || "-"}</td>
                 <td>${candidate.location || "-"}</td>
-                <td>${new Date(candidate.createdAt).toLocaleString()}</td>
+                <td>${candidate.createdAt ? new Date(candidate.createdAt).toLocaleString() : "-"}</td>
                 <td>
                     <span class="delete-btn" onclick="deleteCandidate('${candidate._id}')">
                         Delete
@@ -152,7 +186,15 @@ async function fetchCandidates() {
         });
 
     } catch (err) {
-        console.error("Error loading data", err);
+        console.error(err);
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="6" class="error">
+                    Failed to load data. Check console (F12).
+                </td>
+            </tr>
+        `;
     }
 }
 
@@ -160,9 +202,13 @@ async function deleteCandidate(id) {
     if (!confirm("Delete this candidate?")) return;
 
     try {
-        await fetch(`${API_URL}/${id}`, {
+        const res = await fetch(`${API_URL}/${id}`, {
             method: "DELETE"
         });
+
+        if (!res.ok) {
+            throw new Error("Delete failed");
+        }
 
         fetchCandidates();
 
@@ -171,16 +217,18 @@ async function deleteCandidate(id) {
     }
 }
 
+// Search filter
 document.getElementById("search").addEventListener("keyup", function() {
-    let value = this.value.toLowerCase();
-    let rows = document.querySelectorAll("#candidateTable tbody tr");
+    const value = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#candidateTable tbody tr");
 
     rows.forEach(row => {
-        let text = row.innerText.toLowerCase();
+        const text = row.innerText.toLowerCase();
         row.style.display = text.includes(value) ? "" : "none";
     });
 });
 
+// Load data
 fetchCandidates();
 
 </script>
