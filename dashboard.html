@@ -1,60 +1,112 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Dashboard</title>
+<meta charset="UTF-8">
+<title>Staffnexa Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.tailwindcss.com"></script>
+
 </head>
-<body>
 
-<h2>Candidate Applications</h2>
+<body class="bg-gray-100 p-6">
 
-<table border="1" width="100%">
-<thead>
-<tr>
-<th>Name</th>
-<th>Phone</th>
-<th>Role</th>
-<th>Location</th>
-<th>Date</th>
-</tr>
-</thead>
+<div class="max-w-6xl mx-auto">
 
-<tbody id="data">
-<tr><td colspan="5">Loading...</td></tr>
-</tbody>
-</table>
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Candidate Applications</h2>
+
+        <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded">
+            Logout
+        </button>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded shadow overflow-hidden">
+        <table class="w-full text-left border">
+            <thead class="bg-gray-200">
+                <tr>
+                    <th class="p-3">Name</th>
+                    <th class="p-3">Phone</th>
+                    <th class="p-3">Role</th>
+                    <th class="p-3">Location</th>
+                    <th class="p-3">Date</th>
+                </tr>
+            </thead>
+
+            <tbody id="data">
+                <tr><td colspan="5" class="p-4 text-center">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
 
 <script>
 
-const API = "https://jobapp.staffnexats.com/candidates";
+const API_BASE = "https://staffnexa-backend.onrender.com"; // SAME AS LOGIN
+const API = API_BASE + "/candidates";
 
+// 🔒 AUTH CHECK
+const token = localStorage.getItem("adminAuth");
+
+if (!token) {
+    window.location.href = "index.html";
+}
+
+// 🚀 LOAD DATA
 async function load() {
     try {
-        const res = await fetch(API);
+        const res = await fetch(API, {
+            headers: {
+                "Authorization": "Basic " + token
+            }
+        });
+
+        if (res.status === 401) {
+            logout();
+            return;
+        }
+
         const data = await res.json();
 
         const tbody = document.getElementById("data");
         tbody.innerHTML = "";
 
+        if (!data.length) {
+            tbody.innerHTML = "<tr><td colspan='5' class='p-4 text-center'>No Data Found</td></tr>";
+            return;
+        }
+
         data.forEach(d => {
             const tr = document.createElement("tr");
 
             tr.innerHTML = `
-                <td>${d.name}</td>
-                <td>${d.phone}</td>
-                <td>${d.role}</td>
-                <td>${d.location}</td>
-                <td>${new Date(d.createdAt).toLocaleString()}</td>
+                <td class="p-3">${d.name || ""}</td>
+                <td class="p-3">${d.phone || ""}</td>
+                <td class="p-3">${d.role || ""}</td>
+                <td class="p-3">${d.location || ""}</td>
+                <td class="p-3">${new Date(d.createdAt).toLocaleString()}</td>
             `;
 
             tbody.appendChild(tr);
         });
 
-    } catch(e) {
-        document.getElementById("data").innerHTML = "<tr><td colspan='5'>Error</td></tr>";
-        console.log(e);
+    } catch (e) {
+        console.error(e);
+        document.getElementById("data").innerHTML =
+            "<tr><td colspan='5' class='p-4 text-center text-red-500'>Error loading data</td></tr>";
     }
 }
 
+// 🔓 LOGOUT
+function logout() {
+    localStorage.removeItem("adminAuth");
+    window.location.href = "index.html";
+}
+
+// INIT
 load();
 
 </script>
