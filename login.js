@@ -1,20 +1,21 @@
 const API_BASE = "https://staffnexa-backend.onrender.com";
 
-// ===== LOGIN FUNCTION =====
 async function login() {
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value.trim();
+    const btn = document.getElementById("loginBtn");
 
     if (!username || !password) {
-        alert("Please enter username and password");
+        alert("Enter username and password");
         return;
     }
 
-    // Create Basic Auth token
     const token = btoa(`${username}:${password}`);
 
+    // Prevent multiple clicks
+    btn.disabled = true;
+
     try {
-        // Test API call
         const response = await fetch(`${API_BASE}/candidates`, {
             method: "GET",
             headers: {
@@ -24,17 +25,19 @@ async function login() {
 
         if (response.status === 401) {
             alert("Invalid credentials");
+            btn.disabled = false;
             return;
         }
 
-        // Save token
+        // SAVE TOKEN (CRITICAL)
         localStorage.setItem("authToken", token);
 
-        // Redirect to dashboard
+        // REDIRECT
         window.location.href = "dashboard.html";
 
     } catch (error) {
-        console.error("Login error:", error);
-        alert("Server not responding");
+        console.error(error);
+        alert("Server error");
+        btn.disabled = false;
     }
 }
